@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>HeatGuard AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&family=Public+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "outline": "#a98a7f",
+          "on-primary-container": "#4f1800",
+          "surface-dim": "#061424",
+          "inverse-surface": "#d6e3fa",
+          "surface-container-lowest": "#020f1e",
+          "surface-container-high": "#1e2b3c",
+          "background": "#061424",
+          "on-primary": "#5a1c00",
+          "on-tertiary-fixed-variant": "#910807",
+          "surface-bright": "#2d3a4b",
+          "on-secondary": "#1c314b",
+          "on-error": "#690005",
+          "outline-variant": "#594138",
+          "primary": "#ffb599",
+          "surface-container": "#132031",
+          "secondary-container": "#364a65",
+          "on-background": "#d6e3fa",
+          "inverse-on-surface": "#243142",
+          "error-container": "#93000a",
+          "secondary": "#b3c8e8",
+          "on-primary-fixed-variant": "#7f2b00",
+          "on-primary-fixed": "#370e00",
+          "tertiary-container": "#fb5a49",
+          "on-surface": "#d6e3fa",
+          "on-secondary-fixed": "#041c35",
+          "surface-tint": "#ffb599",
+          "on-tertiary-container": "#5d0001",
+          "on-error-container": "#ffdad6",
+          "on-tertiary-fixed": "#410000",
+          "on-secondary-fixed-variant": "#334862",
+          "secondary-fixed-dim": "#b3c8e8",
+          "tertiary-fixed-dim": "#ffb4a9",
+          "primary-fixed": "#ffdbce",
+          "surface": "#061424",
+          "on-surface-variant": "#e2bfb3",
+          "tertiary-fixed": "#ffdad5",
+          "inverse-primary": "#a73b00",
+          "surface-container-highest": "#283647",
+          "primary-fixed-dim": "#ffb599",
+          "secondary-fixed": "#d2e4ff",
+          "on-tertiary": "#690001",
+          "surface-container-low": "#0f1c2c",
+          "tertiary": "#ffb4a9",
+          "surface-variant": "#283647",
+          "on-secondary-container": "#a5bad9",
+          "primary-container": "#f4631e",
+          "error": "#ffb4ab"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.125rem",
+          "lg": "0.25rem",
+          "xl": "0.5rem",
+          "full": "0.75rem"
+        },
+        "fontFamily": {
+          "headline": ["Space Grotesk"],
+          "body": ["Public Sans"],
+          "label": ["Public Sans"]
+        }
+      },
+    },
+  }
+</script>
+<style>
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+  body {
+    background-color: #061424;
+    color: #d6e3fa;
+    font-family: 'Public Sans', sans-serif;
+    min-height: 100dvh;
+  }
+
+  /* ── Screen management ── */
+  .screen { display: none; min-height: 100dvh; }
+  .screen.active { display: block; }
+
+  /* ── Screen: Loading ── */
+  .loading-ring {
+    width: 48px; height: 48px;
+    border: 3px solid rgba(244, 99, 30, 0.1);
+    border-radius: 50%;
+    border-top-color: #F4631E;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .bg-tactical-grid {
+    background-image: radial-gradient(rgba(89, 65, 56, 0.15) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  /* ── Screen: Welcome ── */
+  #screen-welcome body, #screen-welcome {
+    background-color: #061424;
+  }
+
+  /* ── Screen: Check-in ── */
+  .glass-panel {
+    background: rgba(40, 54, 71, 0.6);
+    backdrop-filter: blur(20px);
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 24px; width: 24px;
+    border-radius: 50%;
+    background: #f4631e;
+    cursor: pointer;
+    border: 4px solid #ffb599;
+  }
+
+  /* ── Screen: Emergency ── */
+  .emergency-pulse {
+    box-shadow: 0 0 0 0 rgba(251, 90, 73, 0.7);
+    animation: pulse-red 2s infinite;
+  }
+  @keyframes pulse-red {
+    0%   { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(251, 90, 73, 0.7); }
+    70%  { transform: scale(1);    box-shadow: 0 0 0 20px rgba(251, 90, 73, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(251, 90, 73, 0); }
+  }
+
+  /* ── Settings ── */
+  input:focus, select:focus {
+    outline: none;
+    border-bottom: 2px solid #ffb599 !important;
+  }
+
+  /* ── Transitions ── */
+  .screen { animation: fadeIn 0.25s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN 1: LOADING / SPLASH
+═══════════════════════════════════════════ -->
+<div id="screen-loading" class="screen active">
+  <div class="fixed inset-0 bg-[#0B1929] text-on-surface font-body flex flex-col items-center justify-center overflow-hidden">
+    <div class="fixed inset-0 bg-tactical-grid pointer-events-none"></div>
+    <div class="fixed inset-0 bg-gradient-to-b from-transparent via-[#0B1929]/50 to-[#0B1929] pointer-events-none"></div>
+    <main class="relative z-10 flex flex-col items-center justify-center px-6 text-center">
+      <div class="relative mb-12 group">
+        <div class="absolute -inset-8 bg-primary-container/10 blur-3xl rounded-full"></div>
+        <div class="relative flex flex-col items-center">
+          <div class="flex items-center justify-center w-24 h-24 mb-6 rounded-xl bg-surface-container-high shadow-[0_0_40px_rgba(244,99,30,0.2)] border border-outline-variant/20">
+            <span class="material-symbols-outlined text-primary-container text-6xl" style="font-variation-settings:'FILL' 1;">shield_with_heart</span>
+            <span class="material-symbols-outlined absolute text-on-primary-container text-2xl mt-1">device_thermostat</span>
+          </div>
+          <h1 class="font-headline font-bold text-4xl md:text-5xl tracking-tighter text-on-surface flex items-center gap-2">
+            HEATGUARD <span class="text-primary-container">AI</span>
+          </h1>
+          <div class="mt-4 flex items-center gap-3">
+            <div class="h-[1px] w-8 bg-outline-variant/40"></div>
+            <p class="font-label text-xs font-semibold uppercase tracking-[0.25em] text-on-surface-variant">Protecting Workers from Heatstroke</p>
+            <div class="h-[1px] w-8 bg-outline-variant/40"></div>
+          </div>
+        </div>
+      </div>
+      <div class="flex flex-col items-center gap-6">
+        <div class="loading-ring"></div>
+        <div class="flex flex-col items-center gap-2">
+          <span class="font-label text-sm font-medium text-primary tracking-wide animate-pulse" id="loadingStatus">Fetching your location...</span>
+          <div class="flex gap-4 mt-2">
+            <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-low border border-outline-variant/10">
+              <span class="material-symbols-outlined text-[14px] text-on-secondary-container">satellite_alt</span>
+              <span class="text-[10px] uppercase font-bold text-on-secondary-container tracking-widest">GPS LINK</span>
+            </div>
+            <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-low border border-outline-variant/10">
+              <span class="material-symbols-outlined text-[14px] text-on-secondary-container">thermostat</span>
+              <span class="text-[10px] uppercase font-bold text-on-secondary-container tracking-widest">SENSOR SYNC</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <footer class="fixed bottom-8 right-8 z-20">
+      <div class="flex flex-col items-end gap-1 opacity-40">
+        <span class="font-headline font-black text-xs tracking-widest uppercase">System Core</span>
+        <span class="font-label text-[10px] font-bold tracking-tighter">Version 1.0</span>
+      </div>
+    </footer>
+    <div class="fixed top-8 left-8 w-12 h-12 border-t-2 border-l-2 border-outline-variant/20 pointer-events-none"></div>
+    <div class="fixed bottom-8 left-8 w-12 h-12 border-b-2 border-l-2 border-outline-variant/20 pointer-events-none"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN 2: WELCOME / ONBOARDING
+═══════════════════════════════════════════ -->
+<div id="screen-welcome" class="screen">
+  <div class="bg-surface text-on-surface min-h-screen flex flex-col items-center justify-center p-6 overflow-hidden relative">
+    <div class="fixed inset-0 pointer-events-none overflow-hidden">
+      <div class="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] bg-primary-container/10 rounded-full blur-[120px]"></div>
+      <div class="absolute bottom-[-5%] left-[-5%] w-[40%] h-[40%] bg-tertiary-container/5 rounded-full blur-[100px]"></div>
+      <div class="absolute inset-0 opacity-[0.03]" style="background-image: radial-gradient(#d6e3fa 0.5px, transparent 0.5px); background-size: 24px 24px;"></div>
+    </div>
+    <main class="relative z-10 w-full max-w-md flex flex-col items-center text-center">
+      <div class="relative mb-12">
+        <div class="absolute inset-0 bg-surface-container-high/40 backdrop-blur-xl rounded-full scale-150 border border-outline-variant/10"></div>
+        <div class="relative w-32 h-32 flex items-center justify-center bg-gradient-to-br from-primary to-primary-container rounded-xl shadow-[0_0_40px_rgba(244,99,30,0.3)]">
+          <span class="material-symbols-outlined text-on-primary-container text-7xl" style="font-variation-settings:'FILL' 1;">device_thermostat</span>
+        </div>
+        <div class="absolute -top-4 -right-4 w-12 h-12 rounded-full border-2 border-dashed border-primary/20 flex items-center justify-center">
+          <span class="material-symbols-outlined text-primary/40 text-xl">radar</span>
+        </div>
+      </div>
+      <header class="space-y-6 mb-16">
+        <h1 class="font-headline text-5xl font-bold tracking-tight text-on-surface leading-[1.1]">
+          Stay Safe <span class="text-primary">in the Heat</span>
+        </h1>
+        <p class="text-on-surface-variant text-lg leading-relaxed px-4 font-medium opacity-80">
+          HeatGuard AI monitors your heat risk and warns you before it becomes dangerous
+        </p>
+      </header>
+      <div class="grid grid-cols-2 gap-3 w-full mb-12">
+        <div class="bg-surface-container-low/60 backdrop-blur-sm p-4 rounded-xl border border-outline-variant/10 flex items-center space-x-3 text-left">
+          <span class="material-symbols-outlined text-primary">monitor_heart</span>
+          <span class="text-[10px] font-label uppercase tracking-widest text-on-surface-variant">Live Vitals</span>
+        </div>
+        <div class="bg-surface-container-low/60 backdrop-blur-sm p-4 rounded-xl border border-outline-variant/10 flex items-center space-x-3 text-left">
+          <span class="material-symbols-outlined text-primary">notifications_active</span>
+          <span class="text-[10px] font-label uppercase tracking-widest text-on-surface-variant">Instant Alerts</span>
+        </div>
+      </div>
+      <div class="w-full space-y-6">
+        <button onclick="showScreen('screen-loading'); startApp();" class="w-full h-14 bg-primary-container text-on-primary-container font-headline font-bold text-lg rounded-xl shadow-lg shadow-primary-container/20 active:scale-95 transition-transform flex items-center justify-center space-x-2">
+          <span>Get Started</span>
+          <span class="material-symbols-outlined">arrow_forward</span>
+        </button>
+        <div class="flex items-center justify-center space-x-2 text-outline-variant/60">
+          <div class="w-1.5 h-1.5 rounded-full bg-primary"></div>
+          <div class="w-1.5 h-1.5 rounded-full bg-surface-container-highest"></div>
+          <div class="w-1.5 h-1.5 rounded-full bg-surface-container-highest"></div>
+        </div>
+      </div>
+    </main>
+    <footer class="fixed bottom-10 w-full px-12 flex justify-between items-center opacity-30">
+      <div class="flex flex-col">
+        <span class="text-[8px] font-label uppercase tracking-widest">System Status</span>
+        <span class="text-[10px] font-headline font-bold text-primary">OPERATIONAL</span>
+      </div>
+      <div class="h-px flex-grow mx-8 bg-outline-variant/20"></div>
+      <div class="flex flex-col items-end">
+        <span class="text-[8px] font-label uppercase tracking-widest">Ver.</span>
+        <span class="text-[10px] font-headline font-bold text-on-surface">2.4.0-A</span>
+      </div>
+    </footer>
+    <div class="fixed top-6 left-6 w-8 h-8 border-t border-l border-outline-variant/20"></div>
+    <div class="fixed top-6 right-6 w-8 h-8 border-t border-r border-outline-variant/20"></div>
+    <div class="fixed bottom-6 left-6 w-8 h-8 border-b border-l border-outline-variant/20"></div>
+    <div class="fixed bottom-6 right-6 w-8 h-8 border-b border-r border-outline-variant/20"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN 3: DASHBOARD
+═══════════════════════════════════════════ -->
+<div id="screen-dashboard" class="screen">
+  <div class="bg-surface-dim font-body text-on-surface min-h-screen pb-24" style="background-image: radial-gradient(at 0% 0%, rgba(244, 99, 30, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(251, 90, 73, 0.1) 0px, transparent 50%);">
+    <!-- TopAppBar -->
+    <header class="fixed top-0 w-full z-50 bg-[#061424]/60 backdrop-blur-md border-b border-[#594138]/20 shadow-[0_4px_32px_0_rgba(15,28,44,0.4)] flex items-center justify-between px-6 h-16">
+      <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-[#FFB599] text-2xl">shield_with_heart</span>
+        <h1 class="text-xl font-black text-[#F4631E] tracking-tighter font-headline uppercase">HEATGUARD AI</h1>
+      </div>
+      <button class="hover:opacity-80 transition-opacity active:scale-95">
+        <span class="material-symbols-outlined text-[#FFB599]">notifications</span>
+      </button>
+    </header>
+    <main class="pt-16 px-4 max-w-2xl mx-auto">
+      <!-- Risk Banner -->
+      <section class="mt-4 rounded-xl overflow-hidden relative shadow-2xl">
+        <div id="db-riskBanner" class="bg-primary-container p-8 text-on-primary-container relative z-10">
+          <div class="flex justify-between items-start mb-6">
+            <div>
+              <span class="font-headline font-bold text-sm tracking-widest uppercase opacity-80 block mb-1">Current Status</span>
+              <h2 class="font-headline font-extrabold text-5xl tracking-tight leading-none text-white" id="db-riskLabel">HIGH RISK</h2>
+            </div>
+            <div class="text-right">
+              <span class="font-headline font-bold text-4xl block leading-none" id="db-riskScore">72</span>
+              <span class="font-label font-medium text-xs opacity-70 uppercase tracking-tighter">/ 100 SCORE</span>
+            </div>
+          </div>
+          <div class="bg-[#4f1800]/20 rounded-xl p-4 backdrop-blur-sm border border-white/10">
+            <p class="font-body font-bold text-lg leading-snug" id="db-riskAction">STOP WORK. Rest in shade. Supervisor has been notified.</p>
+          </div>
+        </div>
+        <div class="absolute inset-0 bg-gradient-to-br from-primary-container to-tertiary-container pointer-events-none opacity-90"></div>
+      </section>
+      <!-- Stats Bento Grid -->
+      <section class="mt-6 grid grid-cols-2 gap-4">
+        <div class="col-span-2 bg-surface-container-low p-5 rounded-xl border border-outline-variant/10">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="font-label text-[10px] uppercase tracking-widest text-outline mb-1 block">Time to Danger</span>
+              <div class="flex items-baseline gap-2">
+                <span class="font-headline font-bold text-4xl text-on-surface" id="db-timeDanger">45</span>
+                <span class="font-body text-lg text-on-surface-variant">min</span>
+              </div>
+            </div>
+            <span class="material-symbols-outlined text-tertiary text-4xl">timer</span>
+          </div>
+        </div>
+        <div class="bg-surface-container-high p-5 rounded-xl border border-outline-variant/10">
+          <span class="font-label text-[10px] uppercase tracking-widest text-outline mb-1 block">Temperature</span>
+          <div class="flex items-baseline gap-1">
+            <span class="font-headline font-bold text-3xl text-on-surface" id="db-temp">38</span>
+            <span class="font-body text-lg text-on-surface-variant">°C</span>
+          </div>
+        </div>
+        <div class="bg-surface-container-high p-5 rounded-xl border border-outline-variant/10">
+          <span class="font-label text-[10px] uppercase tracking-widest text-outline mb-1 block">Humidity</span>
+          <div class="flex items-baseline gap-1">
+            <span class="font-headline font-bold text-3xl text-on-surface" id="db-humidity">72</span>
+            <span class="font-body text-lg text-on-surface-variant">%</span>
+          </div>
+        </div>
+      </section>
+      <!-- Actions -->
+      <section class="mt-8 flex flex-col gap-4">
+        <button onclick="logWaterIntake()" class="w-full h-14 bg-primary-container text-on-primary-container font-headline font-bold text-lg rounded-xl flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition-transform">
+          I Just Drank Water 💧
+        </button>
+        <button onclick="refreshRisk()" class="w-full h-14 bg-surface-container-highest text-primary font-headline font-bold text-lg rounded-xl border border-primary/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
+          Check Again 🔄
+        </button>
+        <button onclick="showScreen('screen-detail')" class="text-center font-label text-sm text-outline hover:text-primary transition-colors py-2 uppercase tracking-wide">
+          View Risk Details →
+        </button>
+        <button onclick="showScreen('screen-checkin')" class="text-center font-label text-sm text-outline hover:text-primary transition-colors py-2 uppercase tracking-wide">
+          Update my work details
+        </button>
+      </section>
+    </main>
+    <!-- SOS FAB -->
+    <button onclick="showScreen('screen-sos')" class="fixed bottom-24 right-6 w-16 h-16 bg-error-container text-on-error-container rounded-full shadow-[0_8px_32px_0_rgba(147,0,10,0.4)] flex items-center justify-center z-40 border-4 border-surface-dim active:scale-90 transition-transform">
+      <span class="material-symbols-outlined text-3xl" style="font-variation-settings:'FILL' 1;">sos</span>
+    </button>
+    <!-- Bottom Nav -->
+    <nav class="fixed bottom-0 left-0 w-full bg-[#0F1C2C] flex justify-around items-center px-4 py-3 pb-safe rounded-t-xl z-50 shadow-[0_-4px_20px_0_rgba(0,0,0,0.5)]">
+      <div class="flex flex-col items-center justify-center bg-[#1E2B3C] text-[#FFB599] rounded-xl px-4 py-2">
+        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">dashboard</span>
+        <span class="font-['Public_Sans'] font-medium text-[10px] uppercase tracking-wider mt-1">Dashboard</span>
+      </div>
+      <button onclick="showScreen('screen-checkin')" class="flex flex-col items-center justify-center text-[#594138] px-4 py-2 hover:bg-[#1E2B3C] transition-colors active:scale-90">
+        <span class="material-symbols-outlined">water_full</span>
+        <span class="font-['Public_Sans'] font-medium text-[10px] uppercase tracking-wider mt-1">Check-In</span>
+      </button>
+      <button onclick="showScreen('screen-settings')" class="flex flex-col items-center justify-center text-[#594138] px-4 py-2 hover:bg-[#1E2B3C] transition-colors active:scale-90">
+        <span class="material-symbols-outlined">settings</span>
+        <span class="font-['Public_Sans'] font-medium text-[10px] uppercase tracking-wider mt-1">Settings</span>
+      </button>
+      <button onclick="showScreen('screen-detail')" class="flex flex-col items-center justify-center text-[#594138] px-4 py-2 hover:bg-[#1E2B3C] transition-colors active:scale-90">
+        <span class="material-symbols-outlined">help</span>
+        <span class="font-['Public_Sans'] font-medium text-[10px] uppercase tracking-wider mt-1">Help</span>
+      </button>
+    </nav>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN 4: RISK DETAIL
+═══════════════════════════════════════════ -->
+<div id="screen-detail" class="screen">
+  <div class="bg-background text-on-surface font-body min-h-screen pb-24">
+    <!-- TopAppBar -->
+    <header class="fixed top-0 w-full z-50 bg-[#061424]/60 backdrop-blur-md border-b border-[#594138]/20 shadow-[0_4px_32px_0_rgba(15,28,44,0.4)] flex items-center justify-between px-6 h-16">
+      <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-[#F4631E]">shield_with_heart</span>
+        <span class="font-['Space_Grotesk'] font-black text-xl text-[#F4631E] tracking-tighter">HEATGUARD AI</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <button class="text-[#283647] hover:opacity-80 transition-opacity active:scale-95">
+          <span class="material-symbols-outlined">notifications</span>
+        </button>
+      </div>
+    </header>
+    <main class="pt-20 pb-28 px-4 max-w-2xl mx-auto space-y-6">
+      <!-- Alert Banner -->
+      <div class="relative overflow-hidden rounded-xl bg-[#E67E22] p-6 shadow-2xl">
+        <div class="absolute top-0 right-0 -mt-4 -mr-4 opacity-10">
+          <span class="material-symbols-outlined text-[120px]" style="font-variation-settings:'FILL' 1;">warning</span>
+        </div>
+        <div class="relative z-10 flex flex-col items-center justify-center text-center space-y-2">
+          <span class="font-headline font-bold tracking-[0.2em] text-white/80 text-sm uppercase">Current Alert Level</span>
+          <h1 class="font-headline font-black text-5xl text-white tracking-tight" id="det-riskLabel">HIGH RISK</h1>
+          <div class="mt-2 px-3 py-1 bg-white/20 rounded-full text-white text-xs font-bold uppercase tracking-widest">Immediate Action Required</div>
+        </div>
+      </div>
+      <!-- Why is my risk HIGH? -->
+      <section class="space-y-4">
+        <h2 class="font-headline font-bold text-lg uppercase tracking-wider text-primary flex items-center gap-2">
+          <span class="material-symbols-outlined">info</span>Why is my risk HIGH?
+        </h2>
+        <div class="bg-surface-container-low rounded-xl p-5 border-l-4 border-primary-container">
+          <p class="text-on-surface leading-relaxed font-medium">
+            Critical threshold breach detected. Your current environment is exceeding safe physiological limits for sustained activity.
+          </p>
+          <div class="grid grid-cols-3 gap-4 mt-6">
+            <div class="flex flex-col">
+              <span class="text-[10px] uppercase tracking-widest text-outline">Temperature</span>
+              <span class="font-headline font-bold text-2xl text-on-surface" id="det-temp">42°C</span>
+            </div>
+            <div class="flex flex-col border-l border-outline-variant/30 pl-4">
+              <span class="text-[10px] uppercase tracking-widest text-outline">Humidity</span>
+              <span class="font-headline font-bold text-2xl text-on-surface" id="det-humidity">68%</span>
+            </div>
+            <div class="flex flex-col border-l border-outline-variant/30 pl-4">
+              <span class="text-[10px] uppercase tracking-widest text-outline">Exposure</span>
+              <span class="font-headline font-bold text-2xl text-on-surface" id="det-hours">5 HRS</span>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- What should I do right now? -->
+      <section class="space-y-4">
+        <h2 class="font-headline font-bold text-lg uppercase tracking-wider text-tertiary-container flex items-center gap-2">
+          <span class="material-symbols-outlined">task_alt</span>What should I do right now?
+        </h2>
+        <div class="space-y-3">
+          <div class="flex items-center gap-4 bg-surface-container-high p-4 rounded-xl border border-outline-variant/10">
+            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center text-primary-container font-black">1</div>
+            <span class="font-semibold text-on-surface">Stop all physical work immediately</span>
+          </div>
+          <div class="flex items-center gap-4 bg-surface-container-high p-4 rounded-xl border border-outline-variant/10">
+            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center text-primary-container font-black">2</div>
+            <span class="font-semibold text-on-surface">Move to a shaded or air-conditioned area</span>
+          </div>
+          <div class="flex items-center gap-4 bg-surface-container-high p-4 rounded-xl border border-outline-variant/10">
+            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center text-primary-container font-black">3</div>
+            <span class="font-semibold text-on-surface">Drink 500ml of water with electrolytes</span>
+          </div>
+          <div class="flex items-center gap-4 bg-surface-container-low p-4 rounded-xl border-2 border-dashed border-outline-variant/30">
+            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant">
+              <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1;">check</span>
+            </div>
+            <span class="text-on-surface-variant italic">Supervisor has been notified automatically</span>
+          </div>
+        </div>
+      </section>
+      <!-- Conditions Table -->
+      <section class="space-y-4">
+        <h2 class="font-headline font-bold text-lg uppercase tracking-wider text-secondary flex items-center gap-2">
+          <span class="material-symbols-outlined">analytics</span>Your conditions right now
+        </h2>
+        <div class="bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant/20">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-surface-container-high/50">
+                <th class="px-5 py-3 text-[10px] uppercase tracking-widest text-outline font-bold">Metric</th>
+                <th class="px-5 py-3 text-[10px] uppercase tracking-widest text-outline font-bold text-right">Value</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant/10">
+              <tr>
+                <td class="px-5 py-4 font-medium text-on-surface">WBGT Index</td>
+                <td class="px-5 py-4 font-headline font-bold text-right text-primary" id="det-wbgt">31.4°C</td>
+              </tr>
+              <tr>
+                <td class="px-5 py-4 font-medium text-on-surface">Heat Index</td>
+                <td class="px-5 py-4 font-headline font-bold text-right text-primary" id="det-heatIndex">48°C</td>
+              </tr>
+              <tr>
+                <td class="px-5 py-4 font-medium text-on-surface">Solar Radiation</td>
+                <td class="px-5 py-4 font-headline font-bold text-right" id="det-solar">940 W/m²</td>
+              </tr>
+              <tr>
+                <td class="px-5 py-4 font-medium text-on-surface">Wind Speed</td>
+                <td class="px-5 py-4 font-headline font-bold text-right" id="det-wind">2.1 km/h</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <!-- Map -->
+      <div class="rounded-xl overflow-hidden h-40 relative group">
+        <div class="w-full h-full bg-surface-container-high flex items-center justify-center">
+          <div class="text-center">
+            <span class="material-symbols-outlined text-primary text-4xl" style="font-variation-settings:'FILL' 1;">location_on</span>
+            <p class="text-on-surface-variant text-xs mt-2 uppercase tracking-widest">Zone Alpha-4 • Sector 12</p>
+          </div>
+        </div>
+        <div class="absolute inset-0 bg-gradient-to-t from-surface-dim to-transparent opacity-60"></div>
+        <div class="absolute bottom-4 left-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings:'FILL' 1;">location_on</span>
+          <span class="text-xs font-bold uppercase tracking-widest text-white">Zone Alpha-4 • Sector 12</span>
+        </div>
+      </div>
+    </main>
+    <!-- Bottom Nav -->
+    <nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-3 pb-safe bg-[#0F1C2C] rounded-t-xl z-50 shadow-[0_-4px_20px_0_rgba(0,0,0,0.5)]">
+      <button onclick="showScreen('screen-dashboard')" class="flex flex-col items-center justify-center text-[#594138] px-4 py-2 hover:bg-[#1E2B3C] transition-colors active:scale-90">
+        <span class="material-symbols-outlined">dashboard</span>
+        <span class="font-['Public_Sans'] font-medium text-[10px] uppercase tracking-wider mt-1">Dashboard</span>
+      </button>
+      <button onclick="showScreen('screen-checkin')" class="flex flex-col items-center justify-center bg-[#1E2B3C] text-[#FFB599] rounded-xl px-4 py-2 active:scale-90">
+        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">water_full</span>
+        <span class="font-['Public_Sans'] font-medium text-[10px] uppercase tracking-wider mt-1">Check-In</span>
+      </button>
+      <button onclick="showScreen('screen-settings')" class="flex flex-col items-center justify-center text-[#594138] px-4 py-2 hover:bg-[#1E2B3C] transition-colors active:scale-90">
+        <span class="material-symbols-outlined">settings</span>
+        <span class="font-['Public_Sans'] font-medium text-[10px] uppercase tracking-wider mt-1">Settings</span>
+      </button>
+      <div class="flex flex-col items-center justify-center text-[#FFB599] bg-[#1E2B3C] rounded-xl px-4 py-2">
+        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">help</span>
+        <span class="font-['Public_Sans'] font-medium text-[10px] uppercase tracking-wider mt-1">Help</span>
+      </div>
+    </nav>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN 5: CHECK-IN
+═══════════════════════════════════════════ -->
+<div id="screen-checkin" class="screen">
+  <div class="min-h-screen pb-24" style="background-color:#061424; color:#d6e3fa;">
+    <!-- TopAppBar -->
+    <header class="fixed top-0 w-full z-50 bg-[#061424]/60 backdrop-blur-md border-b border-[#594138]/20 shadow-[0_4px_32px_0_rgba(15,28,44,0.4)] flex items-center justify-between px-6 h-16">
+      <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-[#FFB599]">shield_with_heart</span>
+        <h1 class="font-['Space_Grotesk'] font-bold tracking-widest uppercase text-[#FFB599]">HEATGUARD AI</h1>
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="material-symbols-outlined text-[#F4631E] text-xl font-black">notifications</span>
+      </div>
+    </header>
+    <main class="pt-24 px-6 max-w-2xl mx-auto space-y-8">
+      <!-- Header -->
+      <section class="space-y-2">
+        <p class="font-['Space_Grotesk'] text-xs uppercase tracking-[0.2em] text-[#FFB599] font-bold">Protocol Alpha</p>
+        <h2 class="font-['Space_Grotesk'] text-4xl font-extrabold tracking-tight text-[#d6e3fa]">Check-In</h2>
+        <p class="text-[#e2bfb3] text-sm max-w-md">Update your physiological status to calibrate real-time heat risk algorithms.</p>
+      </section>
+      <!-- Hydration Status -->
+      <section class="space-y-4">
+        <h3 class="font-['Space_Grotesk'] text-xs uppercase tracking-widest text-[#594138] font-black">Hydration Levels</h3>
+        <div class="grid grid-cols-2 gap-3" id="hydrationOptions">
+          <button class="flex flex-col items-center justify-center p-4 rounded-xl bg-[#1E2B3C] border-2 border-[#ffb599] transition-all group active:scale-95 hydration-opt" data-value="well" onclick="selectHydration(this)">
+            <span class="material-symbols-outlined text-[#2ECC71] text-3xl mb-2">water_drop</span>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-center">Well hydrated</span>
+          </button>
+          <button class="flex flex-col items-center justify-center p-4 rounded-xl bg-[#1E2B3C] border-2 border-transparent hover:border-[#ffb599] transition-all group active:scale-95 hydration-opt" data-value="mild" onclick="selectHydration(this)">
+            <span class="material-symbols-outlined text-[#F1C40F] text-3xl mb-2">opacity</span>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-center">A little thirsty</span>
+          </button>
+          <button class="flex flex-col items-center justify-center p-4 rounded-xl bg-[#1E2B3C] border-2 border-transparent hover:border-[#ffb599] transition-all group active:scale-95 hydration-opt" data-value="dehydrated" onclick="selectHydration(this)">
+            <span class="material-symbols-outlined text-[#E67E22] text-3xl mb-2">water_damage</span>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-center">Thirsty</span>
+          </button>
+          <button class="flex flex-col items-center justify-center p-4 rounded-xl bg-[#1E2B3C] border-2 border-transparent hover:border-[#E74C3C] transition-all group active:scale-95 hydration-opt" data-value="severe" onclick="selectHydration(this)">
+            <span class="material-symbols-outlined text-[#E74C3C] text-3xl mb-2">warning</span>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-center">Dehydrated / Headache</span>
+          </button>
+        </div>
+      </section>
+      <!-- Work Intensity -->
+      <section class="space-y-4">
+        <h3 class="font-['Space_Grotesk'] text-xs uppercase tracking-widest text-[#594138] font-black">Work Intensity</h3>
+        <div class="grid grid-cols-3 gap-3" id="activityOptions">
+          <div class="bg-[#0F1C2C] p-4 rounded-xl flex flex-col items-center gap-2 cursor-pointer hover:bg-[#1E2B3C] transition-colors border-2 border-transparent hover:border-[#F4631E] activity-opt" data-value="light" onclick="selectActivity(this)">
+            <span class="material-symbols-outlined text-[#b3c8e8]">airline_stops</span>
+            <span class="text-[10px] font-bold uppercase tracking-tighter">Light</span>
+          </div>
+          <div class="bg-[#1E2B3C] p-4 rounded-xl flex flex-col items-center gap-2 cursor-pointer border-2 border-[#F4631E] activity-opt" data-value="moderate" onclick="selectActivity(this)">
+            <span class="material-symbols-outlined text-[#F4631E]" style="font-variation-settings:'FILL' 1;">fitness_center</span>
+            <span class="text-[10px] font-bold uppercase tracking-tighter text-[#FFB599]">Moderate</span>
+          </div>
+          <div class="bg-[#0F1C2C] p-4 rounded-xl flex flex-col items-center gap-2 cursor-pointer hover:bg-[#1E2B3C] transition-colors border-2 border-transparent hover:border-[#F4631E] activity-opt" data-value="heavy" onclick="selectActivity(this)">
+            <span class="material-symbols-outlined text-[#b3c8e8]">potted_plant</span>
+            <span class="text-[10px] font-bold uppercase tracking-tighter">Heavy</span>
+          </div>
+        </div>
+      </section>
+      <!-- Shift Duration Slider -->
+      <section class="bg-[#0F1C2C] p-6 rounded-xl space-y-6">
+        <div class="flex justify-between items-center">
+          <h3 class="font-['Space_Grotesk'] text-xs uppercase tracking-widest text-[#e2bfb3] font-black">Shift Duration</h3>
+          <span class="text-2xl font-black text-[#FFB599] font-['Space_Grotesk']" id="hoursDisplay">5.5 <span class="text-xs font-normal text-[#594138]">HRS</span></span>
+        </div>
+        <input class="w-full h-2 bg-[#283647] rounded-lg appearance-none cursor-pointer accent-[#f4631e]" max="8" min="0" step="0.5" type="range" value="5.5" id="hoursSlider" oninput="updateHours(this.value)"/>
+        <div class="flex justify-between text-[10px] font-bold uppercase tracking-widest text-[#594138]">
+          <span>Start</span><span>4h</span><span>Limit</span>
+        </div>
+      </section>
+      <!-- Acclimatized Toggle -->
+      <section class="flex items-center justify-between bg-[#1E2B3C] p-5 rounded-xl border-l-4 border-[#F4631E]">
+        <div class="flex gap-4 items-center">
+          <span class="material-symbols-outlined text-[#FFB599]">thermostat</span>
+          <div>
+            <h4 class="text-sm font-bold text-[#d6e3fa]">Acclimatized</h4>
+            <p class="text-[10px] text-[#e2bfb3] uppercase tracking-wider">7+ days in current climate</p>
+          </div>
+        </div>
+        <button id="acclimatizedToggle" onclick="toggleAcclimatized()" class="w-12 h-6 bg-[#F4631E] rounded-full relative p-1 transition-all">
+          <div id="acclimatizedKnob" class="w-4 h-4 bg-[#4f1800] rounded-full ml-auto transition-all"></div>
+        </button>
+      </section>
+      <!-- Submit -->
+      <button onclick="submitCheckin()" class="w-full h-16 bg-[#F4631E] text-[#4F1800] font-['Space_Grotesk'] font-black uppercase tracking-[0.2em] text-sm rounded-xl shadow-[0_8px_32px_rgba(244,99,30,0.3)] active:scale-[0.98] transition-all flex items-center justify-center gap-3">
+        Update My Risk
+        <span class="material-symbols-outlined">rocket_launch</span>
+      </button>
+    </main>
+    <!-- Bottom Nav -->
+    <nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-3 pb-safe bg-[#0F1C2C] rounded-t-xl z-50 shadow-[0_-4px_20px_0_rgba(0,0,0,0.5)]">
+      <button onclick="showScreen('screen-dashboard')" class="flex flex-col items-center justify-center text-[#594138] px-4 py-2 hover:bg-[#1E2B3C] transition-colors active:scale-90">
+        <span class="material-symbols-outlined">dashboard</span>
+        <span class="font-['Public_Sans'] font-medium text-[10px] uppercase tracking-wider mt-1">Dashboard</span>
+      </button>
+      <div class="flex flex-col items-center justify-center bg-[#1E2B3C] text-[#FFB599] rounded-xl px-4 py-2">
+        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">water_full</span>
+        <span class="font-['Public_Sans'] font-medium text-[10px] uppercase tracking-wider mt-1">Check-In</span>
+      </div>
+      <button onclick="showScreen('screen-settings')" class="flex flex-col items-center justify-center text-[#594138] px-4 py-2 hover:bg-[#1E2B3C] transition-colors active:scale-90">
+        <span class="material-symbols-outlined">settings</span>
+        <span class="font-['Public_Sans'] font-medium text-[10px] uppercase tracking-wider mt-1">Settings</span>
+      </button>
+      <button onclick="showScreen('screen-detail')" class="flex flex-col items-center justify-center text-[#594138] px-4 py-2 hover:bg-[#1E2B3C] transition-colors active:scale-90">
+        <span class="material-symbols-outlined">help</span>
+        <span class="font-['Public_Sans'] font-medium text-[10px] uppercase tracking-wider mt-1">Help</span>
+      </button>
+    </nav>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN 6: SOS / EMERGENCY
+═══════════════════════════════════════════ -->
+<div id="screen-sos" class="screen">
+  <div class="bg-[#061424] text-on-surface font-body min-h-screen">
+    <!-- TopAppBar -->
+    <header class="fixed top-0 w-full z-50 bg-[#061424]/60 backdrop-blur-md border-b border-[#594138]/20 shadow-[0_4px_32px_0_rgba(15,28,44,0.4)] flex items-center justify-between px-6 h-16">
+      <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-[#FFB599]">shield_with_heart</span>
+        <h1 class="font-['Space_Grotesk'] font-bold tracking-widest uppercase text-[#FFB599] text-xl">HEATGUARD AI</h1>
+      </div>
+      <button onclick="showScreen('screen-dashboard')" class="text-[#283647] hover:opacity-80 transition-opacity active:scale-95">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </header>
+    <main class="min-h-screen pt-16 pb-32 bg-[#E74C3C] overflow-hidden relative">
+      <div class="absolute inset-0 opacity-10 pointer-events-none">
+        <div class="absolute top-20 left-10 w-64 h-64 border border-white/20 rounded-full"></div>
+        <div class="absolute bottom-40 right-10 w-96 h-96 border border-white/20 rounded-full"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-px bg-white/20"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-px h-full bg-white/20"></div>
+      </div>
+      <div class="max-w-md mx-auto px-6 py-12 relative z-10 flex flex-col items-center text-center">
+        <div class="w-32 h-32 bg-white/10 backdrop-blur-xl rounded-full flex items-center justify-center mb-8 border border-white/30 emergency-pulse">
+          <span class="material-symbols-outlined text-white text-6xl" style="font-variation-settings:'FILL' 1;">warning</span>
+        </div>
+        <h2 class="font-headline text-4xl font-black text-white leading-none tracking-tighter mb-4">EMERGENCY ALERT SENT</h2>
+        <p class="text-white/90 text-lg font-medium mb-8">Your supervisor has been notified. Help is on the way.</p>
+        <!-- GPS Card -->
+        <div class="w-full bg-white/10 backdrop-blur-md rounded-xl p-5 mb-10 border border-white/20 flex flex-col gap-2 items-start text-left">
+          <div class="flex items-center gap-2 text-white/70 uppercase text-[10px] font-bold tracking-widest">
+            <span class="material-symbols-outlined text-xs">location_on</span>
+            LIVE GPS COORDINATES
+          </div>
+          <div class="font-headline text-2xl font-bold text-white tracking-tight" id="sos-coords">
+            Acquiring GPS...
+          </div>
+          <div class="text-white/60 text-xs font-mono">Precision: ± 3m | Last updated: Just now</div>
+        </div>
+        <!-- Action Buttons -->
+        <div class="w-full flex flex-col gap-4 mb-12">
+          <button onclick="callSupervisor()" class="w-full h-16 bg-white text-[#E74C3C] font-headline font-black text-lg uppercase tracking-wider rounded-xl flex items-center justify-center gap-3 shadow-2xl active:scale-95 transition-transform">
+            <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">call</span>
+            Call Supervisor Now
+          </button>
+          <button class="w-full h-16 bg-white/20 hover:bg-white/30 text-white font-headline font-bold text-lg uppercase tracking-wider rounded-xl flex items-center justify-center gap-3 border border-white/30 backdrop-blur-md active:scale-95 transition-transform">
+            <span class="material-symbols-outlined">emergency_share</span>
+            Emergency Services (108)
+          </button>
+        </div>
+        <!-- Immediate Actions -->
+        <div class="w-full text-left">
+          <h3 class="font-headline text-white/70 text-xs font-bold uppercase tracking-widest mb-4 px-1">IMMEDIATE ACTIONS</h3>
+          <div class="grid grid-cols-1 gap-3">
+            <div class="flex items-center gap-4 bg-white/10 rounded-xl p-4 border border-white/10">
+              <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                <span class="material-symbols-outlined text-white">wb_shade</span>
+              </div>
+              <span class="text-white font-semibold">Move to shade</span>
+            </div>
+            <div class="flex items-center gap-4 bg-white/10 rounded-xl p-4 border border-white/10">
+              <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                <span class="material-symbols-outlined text-white">airline_seat_flat</span>
+              </div>
+              <span class="text-white font-semibold">Lie down</span>
+            </div>
+            <div class="flex items-center gap-4 bg-white/10 rounded-xl p-4 border border-white/10">
+              <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                <span class="material-symbols-outlined text-white">water_drop</span>
+              </div>
+              <span class="text-white font-semibold">Apply cold water</span>
+            </div>
+          </div>
+        </div>
+        <!-- Back to safety -->
+        <button onclick="showScreen('screen-dashboard')" class="mt-10 w-full h-12 bg-white/10 text-white font-headline font-bold uppercase tracking-wider rounded-xl border border-white/20 active:scale-95 transition-transform">
+          ← Return to Dashboard
+        </button>
+      </div>
+    </main>
+    <!-- Bottom Nav -->
+    <nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-3 pb-safe bg-[#0F1C2C] rounded-t-xl z-50 shadow-[0_-4px_20px_0_rgba(0,0,0,0.5)]">
+      <button onclick="showScreen('screen-dashboard')" class="flex flex-col items-center justify-center text-[#594138] px-4 py-2 hover:bg-[#1E2B3C] transition-colors active:scale-90">
+        <span class="material-symbols-outlined">dashboard</span>
+        <span class="font-['Public_Sans'] font-medium text-[10px] uppercase tracking-wider mt-1">Dashboard</span>
+      </button>
+      <button onclick="showScreen('screen-checkin')" class="flex flex-col items-center justify-center bg-[#1E2B3C] text-[#FFB599] rounded-xl px-4 py-2 active:scale-90">
+        <span class="material-symbols-outlined">water_full</span>
+        <span class="font-['Public_Sans'] font-medium text-[10px] uppercase tracking-wider mt-1">Check-In</span>
+      </button>
+      <button onclick="showScreen('screen-settings')" class="flex flex-col items-center justify-center text-[#594138] px-4 py-2 hover:bg-[#1E2B3C] transition-colors active:scale-90">
+        <span class="material-symbols-outlined">settings</span>
+        <span class="font-['Public_Sans'] font-medium text-[10px] uppercase tracking-wider mt-1">Settings</span>
+      </button>
+      <button onclick="showScreen('screen-detail')" class="flex flex-col items-center justify-center text-[#594138] px-4 py-2 hover:bg-[#1E2B3C] transition-colors active:scale-90">
+        <span class="material-symbols-outlined">help</span>
+        <span class="font-['Public_Sans'] font-medium text-[10px] uppercase tracking-wider mt-1">Help</span>
+      </button>
+    </nav>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN 7: SETTINGS
+═══════════════════════════════════════════ -->
+<div id="screen-settings" class="screen">
+  <div class="pb-32" style="background-color:#061424; color:#d6e3fa; font-family:'Public Sans',sans-serif;">
+    <!-- TopAppBar -->
+    <header class="fixed top-0 w-full z-50 bg-[#061424]/60 backdrop-blur-md border-b border-[#594138]/20 shadow-[0_4px_32px_0_rgba(15,28,44,0.4)] flex items-center justify-between px-6 h-16 w-full">
+      <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-[#FFB599]">shield_with_heart</span>
+        <h1 class="font-['Space_Grotesk'] font-bold tracking-widest uppercase text-xl text-[#F4631E] tracking-tighter">HEATGUARD AI</h1>
+      </div>
+      <button class="hover:opacity-80 transition-opacity active:scale-95 text-[#FFB599]">
+        <span class="material-symbols-outlined">account_circle</span>
+      </button>
+    </header>
+    <main class="pt-24 px-6 max-w-2xl mx-auto space-y-8">
+      <div class="mb-8">
+        <h2 class="font-headline text-3xl font-bold text-on-surface tracking-tight">System Configuration</h2>
+        <p class="text-on-surface-variant font-body text-sm mt-1 uppercase tracking-widest opacity-70">Tactical User Parameters</p>
+      </div>
+      <!-- User Profile -->
+      <section class="space-y-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="material-symbols-outlined text-primary">person_outline</span>
+          <h3 class="font-headline font-bold text-xs uppercase tracking-[0.2em] text-outline">User Profile</h3>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
+          <div class="md:col-span-4 bg-surface-container-low p-6 rounded-xl border-l-4 border-primary">
+            <label class="block text-[10px] font-bold uppercase tracking-widest text-primary mb-2">Operator Name</label>
+            <input class="w-full bg-transparent border-none text-xl font-headline font-medium p-0 focus:ring-0" type="text" value="Marcus Chen"/>
+          </div>
+          <div class="md:col-span-2 bg-surface-container-low p-6 rounded-xl">
+            <label class="block text-[10px] font-bold uppercase tracking-widest text-outline mb-2">Age</label>
+            <select class="w-full bg-transparent border-none text-xl font-headline font-medium p-0 focus:ring-0 appearance-none">
+              <option class="bg-surface-container-high">24</option>
+              <option class="bg-surface-container-high" selected>32</option>
+              <option class="bg-surface-container-high">45</option>
+              <option class="bg-surface-container-high">58</option>
+            </select>
+          </div>
+          <div class="md:col-span-3 bg-surface-container-low p-6 rounded-xl">
+            <label class="block text-[10px] font-bold uppercase tracking-widest text-outline mb-2">Work Type</label>
+            <select class="w-full bg-transparent border-none font-body font-medium p-0 focus:ring-0 appearance-none">
+              <option class="bg-surface-container-high" selected>Construction - Heavy</option>
+              <option class="bg-surface-container-high">Agricultural - Manual</option>
+              <option class="bg-surface-container-high">Logistics - Warehouse</option>
+              <option class="bg-surface-container-high">Infrastructure Maintenance</option>
+            </select>
+          </div>
+          <div class="md:col-span-3 bg-surface-container-low p-6 rounded-xl">
+            <label class="block text-[10px] font-bold uppercase tracking-widest text-outline mb-2">Intensity Level</label>
+            <div class="flex items-center justify-between mt-2">
+              <span class="text-xs text-on-surface-variant">Low</span>
+              <input class="flex-1 mx-4 h-1 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-primary-container" max="5" min="1" type="range" value="4"/>
+              <span class="text-xs text-primary font-bold">High</span>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Sensitivity -->
+      <section class="space-y-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="material-symbols-outlined text-primary">notification_important</span>
+          <h3 class="font-headline font-bold text-xs uppercase tracking-[0.2em] text-outline">Sensitivity Calibration</h3>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <button class="flex flex-col items-center justify-center p-4 rounded-xl bg-surface-container-low border border-transparent hover:border-outline-variant transition-all group">
+            <span class="text-[10px] font-bold uppercase tracking-tighter text-outline group-hover:text-on-surface">Conservative</span>
+            <span class="material-symbols-outlined mt-2 text-on-surface-variant opacity-40">shield</span>
+          </button>
+          <button class="flex flex-col items-center justify-center p-4 rounded-xl bg-primary-container/20 border-2 border-primary-container group">
+            <span class="text-[10px] font-bold uppercase tracking-tighter text-primary">Standard</span>
+            <span class="material-symbols-outlined mt-2 text-primary" style="font-variation-settings:'FILL' 1;">verified_user</span>
+          </button>
+          <button class="flex flex-col items-center justify-center p-4 rounded-xl bg-surface-container-low border border-transparent hover:border-outline-variant transition-all group">
+            <span class="text-[10px] font-bold uppercase tracking-tighter text-outline group-hover:text-on-surface">Aggressive</span>
+            <span class="material-symbols-outlined mt-2 text-on-surface-variant opacity-40">warning</span>
+          </button>
+        </div>
+      </section>
+      <!-- Geospatial -->
+      <section class="space-y-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="material-symbols-outlined text-primary">location_on</span>
+          <h3 class="font-headline font-bold text-xs uppercase tracking-[0.2em] text-outline">Geospatial Settings</h3>
+        </div>
+        <div class="glass-panel p-6 rounded-xl border border-outline-variant/20 flex items-center justify-between">
+          <div>
+            <h4 class="font-headline font-bold text-on-surface">Precision GPS</h4>
+            <p class="text-xs text-on-surface-variant mt-1">Real-time local WBGT monitoring</p>
+          </div>
+          <div class="flex bg-surface-container-highest p-1 rounded-full">
+            <button class="px-4 py-1 text-[10px] font-bold rounded-full bg-primary text-on-primary-container shadow-lg">AUTO</button>
+            <button class="px-4 py-1 text-[10px] font-bold text-on-surface-variant">MANUAL</button>
+          </div>
+        </div>
+      </section>
+      <!-- Communications -->
+      <section class="space-y-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="material-symbols-outlined text-primary">emergency</span>
+          <h3 class="font-headline font-bold text-xs uppercase tracking-[0.2em] text-outline">Communications Hub</h3>
+        </div>
+        <div class="space-y-3">
+          <div class="bg-surface-container p-4 rounded-xl flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+                <span class="material-symbols-outlined">notifications_active</span>
+              </div>
+              <div>
+                <span class="block text-sm font-bold text-on-surface">Push Alerts</span>
+                <span class="block text-[10px] text-on-surface-variant uppercase tracking-wider">Mobile App System</span>
+              </div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input checked class="sr-only peer" type="checkbox"/>
+              <div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+            </label>
+          </div>
+          <div class="bg-surface-container p-4 rounded-xl flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-outline">
+                <span class="material-symbols-outlined">sms</span>
+              </div>
+              <div>
+                <span class="block text-sm font-bold text-on-surface">SMS Overrides</span>
+                <span class="block text-[10px] text-on-surface-variant uppercase tracking-wider">Satellite/Cellular Redundancy</span>
+              </div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input class="sr-only peer" type="checkbox"/>
+              <div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+            </label>
+          </div>
+          <div class="bg-surface-container p-5 rounded-xl">
+            <div class="flex items-center gap-4 mb-4">
+              <div class="w-10 h-10 rounded-lg bg-tertiary-container/20 flex items-center justify-center text-tertiary-container">
+                <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">contact_emergency</span>
+              </div>
+              <div>
+                <span class="block text-sm font-bold text-on-surface">Supervisor Protocol</span>
+                <span class="block text-[10px] text-on-surface-variant uppercase tracking-wider">Critical Escalation Line</span>
+              </div>
+            </div>
+            <div class="relative">
+              <input class="w-full bg-surface-container-highest border-none rounded-lg p-4 font-headline text-lg tracking-widest text-on-surface placeholder:text-outline/40" placeholder="+1 (555) 000-0000" type="tel"/>
+              <button class="absolute right-3 top-1/2 -translate-y-1/2 text-primary">
+                <span class="material-symbols-outlined">edit</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Danger Zone -->
+      <section class="mt-12 pt-8 border-t border-outline-variant/10">
+        <button class="w-full flex items-center justify-between p-4 rounded-xl bg-error-container/10 border border-error-container/20 group hover:bg-error-container/20 transition-all">
+          <span class="text-error font-bold uppercase tracking-widest text-xs">Reset Mission Profile</span>
+          <span class="material-symbols-outlined text-error group-hover:translate-x-1 transition-transform">delete_forever</span>
+        </button>
+      </section>
+    </main>
+    <!-- Bottom Nav -->
+    <nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-3 pb-safe bg-[#0F1C2C] shadow-[0_-4px_20px_0_rgba(0,0,0,0.5)] z-50 rounded-t-xl">
+      <button onclick="showScreen('screen-dashboard')" class="flex flex-col items-center justify-center text-[#594138] px-4 py-2 hover:bg-[#1E2B3C] transition-colors active:scale-90">
+        <span class="material-symbols-outlined">dashboard</span>
+        <span class="font-['Public_Sans'] font-medium text-[10px] uppercase tracking-wider mt-1">Dashboard</span>
+      </button>
+      <button onclick="showScreen('screen-checkin')" class="flex flex-col items-center justify-center text-[#594138] px-4 py-2 hover:bg-[#1E2B3C] transition-colors active:scale-90">
+        <span class="material-symbols-outlined">water_full</span>
+        <span class="font-['Public_Sans'] font-medium text-[10px] uppercase tracking-wider mt-1">Check-In</span>
+      </button>
+      <div class="flex flex-col items-center justify-center bg-[#1E2B3C] text-[#FFB599] rounded-xl px-4 py-2">
+        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">settings</span>
+        <span class="font-['Public_Sans'] font-medium text-[10px] uppercase tracking-wider mt-1">Settings</span>
+      </div>
+      <button onclick="showScreen('screen-detail')" class="flex flex-col items-center justify-center text-[#594138] px-4 py-2 hover:bg-[#1E2B3C] transition-colors active:scale-90">
+        <span class="material-symbols-outlined">help</span>
+        <span class="font-['Public_Sans'] font-medium text-[10px] uppercase tracking-wider mt-1">Help</span>
+      </button>
+    </nav>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     APP LOGIC
+═══════════════════════════════════════════ -->
+<script>
+  const API_BASE = "http://localhost:8000";
+
+  // ── App State ──────────────────────────────────────────
+  const state = {
+    lat: null,
+    lon: null,
+    hydration: "well",
+    activity: "moderate",
+    hours: 5.5,
+    acclimatized: true,
+    riskScore: 72,
+    riskLabel: "HIGH",
+    temp: 38,
+    humidity: 72,
+    timeDanger: 45,
+    wbgt: 31.4,
+    heatIndex: 48,
+  };
+
+  // ── Screen Navigation ──────────────────────────────────
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  // ── Initial Load ───────────────────────────────────────
+  window.onload = () => {
+    // Show welcome screen after brief splash
+    setTimeout(() => {
+      showScreen('screen-welcome');
+    }, 2200);
+  };
+
+  function startApp() {
+    showScreen('screen-loading');
+    document.getElementById('loadingStatus').textContent = 'Fetching your location...';
+    
+    getLocation().then(() => {
+      document.getElementById('loadingStatus').textContent = 'Getting weather data...';
+      return sleep(600);
+    }).then(() => {
+      document.getElementById('loadingStatus').textContent = 'Calculating your risk...';
+      return sleep(700);
+    }).then(() => {
+      return fetchRisk();
+    }).then(() => {
+      showScreen('screen-dashboard');
+    });
+  }
+
+  // ── GPS ────────────────────────────────────────────────
+  function getLocation() {
+    return new Promise(resolve => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            state.lat = pos.coords.latitude;
+            state.lon = pos.coords.longitude;
+            resolve();
+          },
+          () => {
+            // Chennai fallback
+            state.lat = 13.08;
+            state.lon = 80.27;
+            resolve();
+          },
+          { timeout: 5000 }
+        );
+      } else {
+        state.lat = 13.08;
+        state.lon = 80.27;
+        resolve();
+      }
+    });
+  }
+
+  // ── Risk Fetch (API or simulated) ─────────────────────
+  async function fetchRisk() {
+    try {
+      const resp = await fetch(`${API_BASE}/predict`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          worker_id: 1,
+          lat: state.lat,
+          lon: state.lon,
+          hours_worked: state.hours,
+          hydration_status: state.hydration,
+          activity_level: state.activity,
+          acclimatized: state.acclimatized,
+        })
+      });
+      const data = await resp.json();
+      applyRiskData(data);
+    } catch {
+      // Simulate data when no backend
+      simulateRisk();
+    }
+  }
+
+  function simulateRisk() {
+    // Simulate risk based on state
+    let score = 40;
+    if (state.hydration === 'mild') score += 10;
+    if (state.hydration === 'dehydrated') score += 20;
+    if (state.hydration === 'severe') score += 30;
+    if (state.activity === 'heavy') score += 15;
+    if (state.activity === 'moderate') score += 8;
+    if (state.hours > 6) score += 10;
+    if (!state.acclimatized) score += 5;
+    score = Math.min(score, 100);
+
+    let label, action, color;
+    if (score < 30)      { label = 'LOW';      action = 'Continue working. Stay hydrated.';           color = '#2ECC71'; }
+    else if (score < 55) { label = 'MODERATE'; action = 'Take a 10-minute break. Drink water.';       color = '#F1C40F'; }
+    else if (score < 75) { label = 'HIGH';     action = 'STOP WORK. Rest in shade. Drink fluids.';    color = '#E67E22'; }
+    else                 { label = 'CRITICAL'; action = 'EMERGENCY. Supervisor notified. Seek shade.'; color = '#E74C3C'; }
+
+    state.riskScore = score;
+    state.riskLabel = label;
+
+    updateDashboard({ label, score, action, color });
+    updateDetailScreen();
+  }
+
+  function applyRiskData(data) {
+    const colorMap = { green: '#2ECC71', yellow: '#F1C40F', orange: '#E67E22', red: '#E74C3C' };
+    state.riskScore = data.risk_score;
+    state.riskLabel = data.risk_label;
+    state.temp = data.tdb;
+    state.humidity = data.rh;
+
+    updateDashboard({
+      label: data.risk_label,
+      score: data.risk_score,
+      action: data.action_message,
+      color: colorMap[data.alert_color] || '#E67E22',
+    });
+    updateDetailScreen();
+
+    if (data.risk_label_int === 3) {
+      setTimeout(() => showScreen('screen-sos'), 500);
+    }
+  }
+
+  function updateDashboard({ label, score, action, color }) {
+    // Risk banner background
+    const banner = document.getElementById('db-riskBanner');
+    banner.style.background = color;
+
+    document.getElementById('db-riskLabel').textContent = label + ' RISK';
+    document.getElementById('db-riskScore').textContent = score;
+    document.getElementById('db-riskAction').textContent = action;
+    document.getElementById('db-temp').textContent = state.temp;
+    document.getElementById('db-humidity').textContent = state.humidity;
+    document.getElementById('db-timeDanger').textContent = state.timeDanger;
+  }
+
+  function updateDetailScreen() {
+    document.getElementById('det-riskLabel').textContent = state.riskLabel + ' RISK';
+    document.getElementById('det-temp').textContent = state.temp + '°C';
+    document.getElementById('det-humidity').textContent = state.humidity + '%';
+    document.getElementById('det-hours').textContent = state.hours + ' HRS';
+    document.getElementById('det-wbgt').textContent = state.wbgt + '°C';
+    document.getElementById('det-heatIndex').textContent = state.heatIndex + '°C';
+  }
+
+  // ── Refresh Risk ───────────────────────────────────────
+  async function refreshRisk() {
+    showScreen('screen-loading');
+    document.getElementById('loadingStatus').textContent = 'Recalculating risk...';
+    if (!state.lat) await getLocation();
+    await sleep(1000);
+    await fetchRisk();
+    showScreen('screen-dashboard');
+  }
+
+  // ── Check-In Actions ───────────────────────────────────
+  function selectHydration(el) {
+    document.querySelectorAll('.hydration-opt').forEach(b => {
+      b.classList.remove('border-[#ffb599]');
+      b.classList.add('border-transparent');
+    });
+    el.classList.remove('border-transparent');
+    el.classList.add('border-[#ffb599]');
+    state.hydration = el.dataset.value;
+  }
+
+  function selectActivity(el) {
+    document.querySelectorAll('.activity-opt').forEach(b => {
+      b.classList.remove('border-[#F4631E]', 'bg-[#1E2B3C]');
+      b.classList.add('border-transparent', 'bg-[#0F1C2C]');
+    });
+    el.classList.remove('border-transparent', 'bg-[#0F1C2C]');
+    el.classList.add('border-[#F4631E]', 'bg-[#1E2B3C]');
+    state.activity = el.dataset.value;
+  }
+
+  function updateHours(val) {
+    state.hours = parseFloat(val);
+    document.getElementById('hoursDisplay').innerHTML =
+      val + ' <span class="text-xs font-normal text-[#594138]">HRS</span>';
+  }
+
+  let acclimatized = true;
+  function toggleAcclimatized() {
+    acclimatized = !acclimatized;
+    state.acclimatized = acclimatized;
+    const knob = document.getElementById('acclimatizedKnob');
+    const btn  = document.getElementById('acclimatizedToggle');
+    if (acclimatized) {
+      btn.style.background = '#F4631E';
+      knob.style.marginLeft = 'auto';
+      knob.style.marginRight = '0';
+    } else {
+      btn.style.background = '#283647';
+      knob.style.marginLeft = '0';
+      knob.style.marginRight = 'auto';
+    }
+  }
+
+  async function submitCheckin() {
+    try {
+      await fetch(`${API_BASE}/checkin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          worker_id: 1,
+          hydration_status: state.hydration,
+          activity_level: state.activity,
+          hours_worked: state.hours,
+          acclimatized: state.acclimatized,
+        })
+      });
+    } catch { /* no backend */ }
+    await refreshRisk();
+  }
+
+  // ── Water Intake ───────────────────────────────────────
+  function logWaterIntake() {
+    state.hydration = 'well';
+    state.timeDanger = Math.min(state.timeDanger + 15, 120);
+    refreshRisk();
+  }
+
+  // ── SOS ────────────────────────────────────────────────
+  function showSOS() {
+    if (state.lat) {
+      document.getElementById('sos-coords').textContent =
+        `${state.lat.toFixed(4)}° N, ${Math.abs(state.lon).toFixed(4)}° W`;
+    }
+    showScreen('screen-sos');
+    // Fire SOS to backend if available
+    fetch(`${API_BASE}/sos`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ worker_id: 1, lat: state.lat || 13.08, lon: state.lon || 80.27 })
+    }).catch(() => {});
+  }
+
+  // Override the nav SOS button to use showSOS
+  document.querySelector('[onclick="showScreen(\'screen-sos\')"]')
+    && (document.querySelector('[onclick="showScreen(\'screen-sos\')"]').onclick = showSOS);
+
+  function callSupervisor() {
+    alert('📞 Connecting to supervisor...\n\nIn a real deployment this would call the supervisor\'s number.');
+  }
+
+  // ── Utilities ──────────────────────────────────────────
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+
+============================================================
+  CHECK 1 — Record & Column Counts
+============================================================
+  Total records : 100,000
+  Total columns : 27
+  [PASS ✓] No missing values
+
+============================================================
+  CHECK 2 — Risk Label Distribution
+============================================================
+  LOW       : 40.2%
+  CRITICAL  : 33.0%
+  MODERATE  : 14.8%
+  HIGH      : 12.0%
+  [PASS ✓] All classes >= 10% — min class = 12.0%
+
+============================================================
+  CHECK 3 — Core Temperature (Ioannou 2022 ref: 37.9 ± 0.5°C)
+============================================================
+  Mean : 38.097 °C  |  Std: 0.711 °C
+  Min  : 37.000 °C  |  Max: 42.000 °C
+  Implausible (<35 or >45°C): 0
+  Extreme model outputs (42–45°C): 0
+  [PASS ✓] Core temp mean within 0.8°C of Ioannou — mean=38.097
+  [PASS ✓] No implausible core temps (<35 or >45°C) — 0 out of [35, 45]°C
+
+============================================================
+  CHECK 4 — Heart Rate (Ioannou 2022 ref: 118 ± 15 bpm)
+============================================================
+  Mean : 137.2 bpm  |  Std: 9.7 bpm
+  [PASS ✓] HR mean plausible (80–160 bpm) — mean=137.2
+
+============================================================
+  CHECK 5 — WBGT Range (Ioannou ref: 15.9–35.8°C)
+============================================================
+  Min=11.10  Max=40.10  Mean=30.49 °C
+  Records in Ioannou WBGT range: 94,825 (94.8%)
+  [PASS ✓] WBGT overlap > 50% — 94.8%
+
+============================================================
+  CHECK 6 — Water Loss (valid: 500–12000 g/shift)
+============================================================
+  Mean=5914 g  |  Max=11516 g
+  Extreme but possible (8000–12000g): 14,818
+  Out-of-range (>12000g): 0
+  [PASS ✓] Water loss in valid range (500–12000 g) — 0 records outside range
+
+============================================================
+  CHECK 7 — Zone Distribution
+============================================================
+  Hot_Humid      :  26,919  (26.9%  target 25%)
+  Semi_Arid      :  25,186  (25.2%  target 25%)
+  Hot_Dry        :  22,893  (22.9%  target 25%)
+  Composite      :  14,931  (14.9%  target 15%)
+  Highland       :  10,071  (10.1%  target 10%)
+  [PASS ✓] Zone distribution within 3% of target
+
+============================================================
+  OVERALL VERDICT
+============================================================
+
+  ALL CHECKS PASSED ✓  (8 passed, 0 failed)
+============================================================

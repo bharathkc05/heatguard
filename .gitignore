@@ -1,0 +1,28 @@
+# Python cache and virtual environments
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+
+# Local secrets and env files
+.env
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+
+# Build/test/runtime artifacts
+*.log
+*.sqlite3
+*.db
+
+# ERA5 extracted scratch/cache (large intermediate duplicates)
+era5_data/extracted/
+
+# Keep main datasets and yearly ERA5 files versioned.
+# Intentionally tracked:
+# - data/**
+# - era5_data/yearly/**
+# - artifacts/**

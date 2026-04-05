@@ -1,0 +1,11 @@
+fastapi>=0.115.12
+uvicorn>=0.34.0
+sqlalchemy>=2.0.40
+httpx>=0.28.1
+joblib>=1.5.3
+xgboost>=3.2.0
+numpy>=2.2.6
+pandas>=2.2.2
+scikit-learn>=1.8.0
+twilio>=9.6.1
+python-dotenv>=1.2.2
