@@ -18,6 +18,12 @@ Thumbs.db
 *.sqlite3
 *.db
 
+# Node/Expo artifacts
+node_modules/
+mobile/.expo/
+mobile/.expo-shared/
+mobile/dist/
+
 # ERA5 extracted scratch/cache (large intermediate duplicates)
 era5_data/extracted/
 
