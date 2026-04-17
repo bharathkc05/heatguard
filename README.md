@@ -43,11 +43,13 @@ The backend returns:
 - [frontend/index.html](frontend/index.html): Single-page tactical UI with loading/welcome/dashboard/detail/check-in/SOS/settings screens.
 - [frontend/manifest.json](frontend/manifest.json): PWA manifest.
 - [frontend/sw.js](frontend/sw.js): Service worker cache logic.
+- [mobile](mobile): React Native (Expo + TypeScript) app wired to all backend endpoints.
 
 ## 3. Current Repository Layout
 
 - [backend](backend): API app, DB file, runtime model
-- [frontend](frontend): UI app
+- [frontend](frontend): web UI app
+- [mobile](mobile): React Native mobile app
 - [data](data): curated data bundles and summaries
 - [data/processed](data/processed): generated ML-ready dataset and split file
 - [data/era5/summary](data/era5/summary): ERA5 statistical summaries
@@ -196,6 +198,8 @@ Interactive docs:
 
 ## 8. Run the Frontend
 
+## 8.1 Web Frontend (Static HTML)
+
 The frontend is static HTML.
 
 Option A (quick): open [frontend/index.html](frontend/index.html) directly.
@@ -213,6 +217,28 @@ Then open:
 
 Frontend API target is currently hardcoded in [frontend/index.html](frontend/index.html) as:
 - `const API_BASE = "http://localhost:8000"`
+
+## 8.2 Mobile Frontend (React Native)
+
+The mobile app lives in [mobile](mobile) and uses Expo.
+
+Install and run:
+
+```powershell
+Push-Location .\mobile
+npm install
+npm run start
+Pop-Location
+```
+
+Backend URL configuration:
+- Set runtime API URL inside app (registration/settings screen), or
+- set `EXPO_PUBLIC_API_BASE_URL` before launch.
+
+Recommended API values:
+- Android Emulator: `http://10.0.2.2:8000`
+- iOS Simulator: `http://localhost:8000`
+- Physical device: `http://<your-lan-ip>:8000`
 
 ## 9. API Endpoints
 

@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "HeatGuard AI",
+    "slug": "heatguard-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "android": {
+      "package": "com.heatguard.mobile"
+    },
+    "ios": {
+      "supportsTablet": false
+    },
+    "extra": {
+      "project": "HeatGuard AI"
+    },
+    "plugins": [
+      "expo-asset"
+    ]
+  }
+}
